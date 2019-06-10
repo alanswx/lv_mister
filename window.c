@@ -3,6 +3,7 @@
 
 #include "iniedit.h"
 void create_main_menu_inside(lv_obj_t *win);
+void create_main_window_info(lv_obj_t *win);
 
 #if LV_EX_KEYBOARD || LV_EX_MOUSEWHEEL
 #include "lv_drv_conf.h"
@@ -21,12 +22,20 @@ lv_obj_t *win=NULL;
 static lv_res_t my_cleanup_action(lv_obj_t * cb) {
 printf("cleanup clicked\n");
 
+//lv_win_clean(win);
+    lv_obj_t * page = lv_win_get_content(win);
+    if (page) {
+		lv_page_clean(page);
+    }
+#if 0
     lv_obj_t * page = lv_win_get_content(win);
     if (page) {lv_obj_t * scrl = lv_page_get_scrl(page);
     if (scrl) lv_obj_clean(scrl);
 }
+#endif
 
 //lv_obj_clean(lv_win_get_content(win));
+    return LV_RES_OK;
 }
 static lv_res_t my_setup_action(lv_obj_t * cb) {
 printf("setup clicked\n");
@@ -47,6 +56,7 @@ lv_label_set_text(txt, "This is the content of the window\n\n"
                        "You can scroll it\n\n"
                        "See the scroll bar on the right!");
 #endif
+    return LV_RES_OK;
 }
 static lv_res_t cb_release_action(lv_obj_t * cb)
 {
@@ -97,14 +107,8 @@ static void group_style_cb(lv_style_t * style)
 {
 }
 
-void create_main_window( )
+void create_main_window_info(lv_obj_t *win)
 {
-    lv_theme_t *th;
-    th = lv_theme_night_init(15, NULL);
-
-    lv_theme_set_current(th);
-
-    // create the main window
 /*Create a scroll bar style*/
 static lv_style_t style_sb;
 lv_style_copy(&style_sb, &lv_style_plain);
@@ -117,7 +121,6 @@ style_sb.body.radius = LV_RADIUS_CIRCLE;
 style_sb.body.opa = LV_OPA_60;
 
 /*Create a window*/
-win = lv_win_create(lv_scr_act(), NULL);
 lv_win_set_title(win, "Mister");                        /*Set the title*/
 lv_win_set_style(win, LV_WIN_STYLE_SB, &style_sb);              /*Set the scroll bar style*/
 lv_win_set_layout(win, LV_LAYOUT_PRETTY);
@@ -128,6 +131,22 @@ lv_win_set_layout(win, LV_LAYOUT_PRETTY);
 lv_win_add_btn(win, SYMBOL_SETTINGS, my_setup_action);            /*Add a setup button*/
 lv_win_add_btn(win, SYMBOL_CLOSE,my_cleanup_action/*lv_win_close_action*/);           /*Add close button and use built-in close action*/
 
+
+}
+
+void create_main_window( )
+{
+    lv_theme_t *th;
+    //th = lv_theme_night_init(250, NULL);
+    th = lv_theme_material_init(250,NULL);
+
+    lv_theme_set_current(th);
+
+    win = lv_win_create(lv_scr_act(), NULL);
+    create_main_window_info(win);
+create_main_menu_inside(win);
+#if 0
+    // create the main window
 #if 0
 /*Add some dummy content*/
 lv_obj_t * txt = lv_label_create(win, NULL);
@@ -244,9 +263,29 @@ lv_list_set_style(list, LV_LIST_STYLE_BTN_PR, &style_btn_pr);
     lv_list_add(list, SYMBOL_COPY, "Copy", list_release_action);
     lv_group_add_obj(g, list);
 #endif
+#endif
 }
 
 void create_main_menu_inside(lv_obj_t *win){
+static lv_group_t * g;
+    g = lv_group_create();
+    lv_group_set_focus_cb(g, group_focus_cb);
+lv_group_set_style_mod_cb(g, group_style_cb);
+#if LV_EX_KEYBOARD
+    lv_indev_drv_t rael_kb_drv;
+    rael_kb_drv.type = LV_INDEV_TYPE_KEYPAD;
+    rael_kb_drv.read = keyboard_read;
+    lv_indev_t * real_kb_indev = lv_indev_drv_register(&rael_kb_drv);
+    lv_indev_set_group(real_kb_indev, g);
+#endif
+
+#if LV_EX_MOUSEWHEEL
+    lv_indev_drv_t enc_drv;
+    enc_drv.type = LV_INDEV_TYPE_ENCODER;
+    enc_drv.read = mousewheel_read;
+    lv_indev_t * enc_indev = lv_indev_drv_register(&enc_drv);
+    lv_indev_set_group(enc_indev, g);
+#endif
 /*Create styles for the buttons*/
 static lv_style_t style_btn_rel;
 static lv_style_t style_btn_pr;
@@ -292,4 +331,5 @@ lv_list_set_style(list, LV_LIST_STYLE_BTN_PR, &style_btn_pr);
     lv_list_add(list, SYMBOL_EDIT, "Edit", list_release_action);
     lv_list_add(list, SYMBOL_CUT,  "Cut",  list_release_action);
     lv_list_add(list, SYMBOL_COPY, "Copy", list_release_action);
+    lv_group_add_obj(g, list);
 }

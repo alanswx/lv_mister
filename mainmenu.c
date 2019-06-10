@@ -49,7 +49,7 @@ void group_style_cb(lv_style_t * style)
 void create_main( )
 {
     lv_theme_t *th;
-    th = lv_theme_night_init(15, NULL);
+    th = lv_theme_night_init(210, NULL);
 
     lv_theme_set_current(th);
 
@@ -128,7 +128,7 @@ lv_group_set_style_mod_cb(g, group_style_cb);
 void create_main2( )
 {
     lv_theme_t *th;
-    th = lv_theme_night_init(15, NULL);
+    th = lv_theme_night_init(250, NULL);
 
     lv_theme_set_current(th);
 
