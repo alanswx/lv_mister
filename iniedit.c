@@ -1,6 +1,7 @@
 #include "lvgl/lvgl.h"
 #include "lv_ex_conf.h"
 
+#include "window.h"
 
 #if LV_EX_KEYBOARD || LV_EX_MOUSEWHEEL
 #include "lv_drv_conf.h"
@@ -59,7 +60,7 @@ printf("group_focus_cb3\n");
 	if (page) {
 print_obj_type(page);
 printf("group_focus_cb4 page: %x\n",page);
-    //    	lv_page_focus(page, f, 200);   
+    //    	lv_page_focus(page, f, 200);
 }
 }
 }
@@ -242,6 +243,7 @@ lv_group_add_obj(g, ta);
 /*Align the container to the middle*/
 lv_obj_align(cont, NULL, LV_ALIGN_CENTER, 0, 0);
 }
+
 void create_ini_list2( lv_obj_t *win)
 {
 
@@ -411,19 +413,183 @@ lv_group_add_obj(g, ta);
 lv_obj_align(cont, NULL, LV_ALIGN_CENTER, 0, 0);
 }
 
+static lv_res_t list_checkbox_action(lv_obj_t * list_btn) {
+    printf("List element click cb:%s\n", lv_list_get_btn_text(list_btn));
+if (lv_list_get_btn_text(list_btn)==NULL || strlen(lv_list_get_btn_text(list_btn))==0) {
+lv_obj_t *cb= lv_list_get_btn_bytype(list_btn,"lv_cb");
+if (cb) {
+printf(" got a checkbox\n");
+	if (lv_cb_is_checked(cb))
+		lv_cb_set_checked(cb, false);
+	else
+		lv_cb_set_checked(cb, true);
+
+}
+}
+
+    return LV_RES_OK;
+}
+static lv_res_t list_text_action(lv_obj_t * list_btn) {
+    printf("List element click ta:%s\n", lv_list_get_btn_text(list_btn));
+//if (lv_list_get_btn_text(list_btn)==NULL || strlen(lv_list_get_btn_text(list_btn))==0) {
+lv_obj_t *ta= lv_list_get_btn_bytype(list_btn,"lv_ta");
+printf("about to focus\n");
+lv_group_focus_obj(ta);
+//}
+    return LV_RES_OK;
+
+}
+static lv_res_t list_ddl_action(lv_obj_t * list_btn) {
+    printf("List element click ta:%s\n", lv_list_get_btn_text(list_btn));
+lv_obj_t *ta= lv_list_get_btn_bytype(list_btn,"lv_ddlist");
+if (ta) {
+printf("about to focus\n");
+lv_group_focus_obj(ta);
+}
+    return LV_RES_OK;
+
+}
+
+static lv_res_t list_release_action(lv_obj_t * list_btn)
+{
+    printf("List element click:%s\n", lv_list_get_btn_text(list_btn));
+    return LV_RES_OK;
+}
+void create_ini_list3( lv_obj_t *win)
+{
+
+static lv_group_t * g;
+    g = lv_group_create();
+    lv_group_set_focus_cb(g, group_focus_cb);
+lv_group_set_style_mod_cb(g, group_style_cb);
+#if LV_EX_KEYBOARD
+    lv_indev_drv_t rael_kb_drv;
+    rael_kb_drv.type = LV_INDEV_TYPE_KEYPAD;
+    rael_kb_drv.read = keyboard_read;
+    lv_indev_t * real_kb_indev = lv_indev_drv_register(&rael_kb_drv);
+    lv_indev_set_group(real_kb_indev, g);
+#endif
+
+#if LV_EX_MOUSEWHEEL
+    lv_indev_drv_t enc_drv;
+    enc_drv.type = LV_INDEV_TYPE_ENCODER;
+    enc_drv.read = mousewheel_read;
+    lv_indev_t * enc_indev = lv_indev_drv_register(&enc_drv);
+    lv_indev_set_group(enc_indev, g);
+#endif
+/*Create styles for the buttons*/
+static lv_style_t style_btn_rel;
+static lv_style_t style_btn_pr;
+lv_style_copy(&style_btn_rel, &lv_style_btn_rel);
+style_btn_rel.body.main_color = LV_COLOR_MAKE(0x30, 0x30, 0x30);
+style_btn_rel.body.grad_color = LV_COLOR_BLACK;
+style_btn_rel.body.border.color = LV_COLOR_SILVER;
+style_btn_rel.body.border.width = 1;
+style_btn_rel.body.border.opa = LV_OPA_50;
+style_btn_rel.body.radius = 0;
+
+lv_style_copy(&style_btn_pr, &style_btn_rel);
+style_btn_pr.body.main_color = LV_COLOR_MAKE(0x55, 0x96, 0xd8);
+style_btn_pr.body.grad_color = LV_COLOR_MAKE(0x37, 0x62, 0x90);
+style_btn_pr.text.color = LV_COLOR_MAKE(0xbb, 0xd5, 0xf1);
+
+
+    lv_obj_t * list = lv_list_create(win, NULL);
+//lv_list_set_sb_mode(list, LV_SB_MODE_AUTO);
+//lv_list_set_sb_mode(list, LV_SB_MODE_AUTO);
+lv_list_set_style(list, LV_LIST_STYLE_BG, &lv_style_transp_tight);
+lv_list_set_style(list, LV_LIST_STYLE_SCRL, &lv_style_transp_tight);
+lv_list_set_style(list, LV_LIST_STYLE_BTN_REL, &style_btn_rel); /*Set the new button styles*/
+lv_list_set_style(list, LV_LIST_STYLE_BTN_PR, &style_btn_pr);
+    lv_obj_set_size(list, lv_page_get_scrl_width(lv_win_get_content(win)), lv_obj_get_height(lv_win_get_content(win)) );
+    lv_group_add_obj(g, list);
+
+    lv_list_add(list, SYMBOL_FILE, "BACK", list_release_action);
+
+
+    lv_obj_t * list_btn;
+    lv_obj_t *li;
+    lv_obj_t * cb;
+
+    li=lv_list_add(list, NULL, NULL, list_checkbox_action);
+    cb = lv_cb_create(li, NULL);
+    lv_cb_set_text(cb, "Map MENU key map to RGUI in Minimig");
+
+    li=lv_list_add(list, NULL, NULL, list_checkbox_action);
+    cb = lv_cb_create(li, NULL);
+    lv_cb_set_text(cb, "Force scandoubler on VGA output always");
+    li=lv_list_add(list, NULL, NULL, list_checkbox_action);
+    cb = lv_cb_create(li, NULL);
+    lv_cb_set_text(cb, "YPbPr on VGA output");
+
+
+    li=lv_list_add(list, NULL, NULL, list_checkbox_action);
+    cb = lv_cb_create(li, NULL);
+    lv_cb_set_text(cb, "composite sync on HSync signal of VGA output");
+
+    li=lv_list_add(list, NULL, NULL, list_checkbox_action);
+    cb = lv_cb_create(li, NULL);
+    lv_cb_set_text(cb, "connect VGA to scaler output");
+
+    li=lv_list_add(list, NULL, NULL, list_checkbox_action);
+    cb = lv_cb_create(li, NULL);
+    lv_cb_set_text(cb, "96khz/16bit HDMI audio");
+
+
+    lv_obj_t * ta;
+    lv_obj_t * title;
+    li=lv_list_add(list, NULL, NULL, list_text_action );
+    title = lv_label_create(li, NULL);
+    lv_label_set_text(title, "VIDPID of keyrah:");
+    ta = lv_ta_create(li, NULL);
+    lv_ta_set_one_line(ta, true);
+    lv_ta_set_text(ta, "0x18d80002");
+    lv_group_add_obj(g, ta);
+    lv_ta_set_one_line( ta, true);
+
+    li=lv_list_add(list, NULL, NULL, list_ddl_action );
+    title = lv_label_create(li, NULL);
+lv_label_set_text(title, "Video Resolution:");
+lv_obj_t * ddl1 = lv_ddlist_create(li, NULL);
+lv_ddlist_set_draw_arrow(ddl1, true);
+lv_ddlist_set_options(ddl1, "1280x720@60\n"
+                            "1024x768@60\n"
+                            "720x480@60\n"
+                            "720x576@50\n"
+                            "fill these in");
+    lv_group_add_obj(g, ddl1);
+
+    li=lv_list_add(list, NULL, NULL, list_checkbox_action);
+    cb = lv_cb_create(li, NULL);
+    lv_cb_set_text(cb, "pal mode");
+
+
+
+    li=lv_list_add(list, NULL, NULL, list_text_action );
+    title = lv_label_create(li, NULL);
+    lv_label_set_text(title, "Font:");
+    ta = lv_ta_create(li, NULL);
+    lv_ta_set_one_line(ta, true);
+    lv_ta_set_text(ta, "/font/myfont.pf");
+    lv_group_add_obj(g, ta);
+    lv_ta_set_one_line( ta, true);
+
+
+}
+
 lv_group_t *group;
 lv_obj_t *win;
 static void group_focus_cb2(lv_group_t * group)
 {
     lv_obj_t * f = lv_group_get_focused(group);
-   
+
     /*Get the wondows content object */
     lv_obj_t * par =  lv_obj_get_parent(f);  /*The content object is page so first get scrollable object*/
     if(par) par = lv_obj_get_parent(par);    /*Then get the page itself*/
 
     /*If the focused object is on the window then scrol lteh window to make it visible*/
     if(par == lv_win_get_content(win)) {
-        lv_win_focus(win, f, 200);   
+        lv_win_focus(win, f, 200);
     }
 }
 void test_group_github(void)
