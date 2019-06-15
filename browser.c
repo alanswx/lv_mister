@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include "window.h"
+#include "browser.h"
 
 #if LV_EX_KEYBOARD || LV_EX_MOUSEWHEEL
 #include "lv_drv_conf.h"
@@ -91,11 +92,20 @@ printf("group_focus_cb4 page: %x\n",page);
 }
 }
 
+lv_obj_t *gwin;
+char gpath[4096];
 static lv_res_t list_release_action(lv_obj_t * list_btn)
 {
     printf("List element click:%s\n", lv_list_get_btn_text(list_btn));
-    return LV_RES_OK;
+    strcat(gpath,"/");
+    strcat(gpath,lv_list_get_btn_text(list_btn));
+    lv_obj_t * page = lv_win_get_content(gwin);
+    if (page) {
+                lv_page_clean(page);
+    }
 
+    create_rombrowser_list( gwin, gpath);
+    return LV_RES_OK;
 }
 
 
@@ -103,7 +113,8 @@ static lv_res_t list_release_action(lv_obj_t * list_btn)
 
 void create_rombrowser_list( lv_obj_t *win, const char  * path)
 {
-
+gwin=win;
+if (gpath!=path) strcat(gpath,path);
 static lv_group_t * g;
     g = lv_group_create();
     lv_group_set_focus_cb(g, group_focus_cb);
