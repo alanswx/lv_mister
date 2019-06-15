@@ -2,6 +2,8 @@
 #include "lv_ex_conf.h"
 
 #include "iniedit.h"
+#include "browser.h"
+
 void create_main_menu_inside(lv_obj_t *win);
 void create_main_window_info(lv_obj_t *win);
 
@@ -141,7 +143,7 @@ if (!strcasecmp(lv_list_get_btn_text(list_btn),"Rom Browser")) {
 		lv_page_clean(page);
     }
 
-	create_rombrowser_list(win );
+	create_rombrowser_list(win,"NES" );
     return LV_RES_OK;
 }
 
@@ -340,6 +342,7 @@ lv_list_set_style(list, LV_LIST_STYLE_BTN_PR, &style_btn_pr);
     ta = lv_ta_create(li, NULL);
     lv_group_add_obj(g, ta);
     lv_ta_set_one_line( ta, true);
+    lv_list_add(list, SYMBOL_DIRECTORY, "Rom Browser", list_release_action);
 
     lv_list_add(list, SYMBOL_FILE, "File", list_release_action);
     lv_list_add(list, SYMBOL_EDIT, "Edit", list_release_action);

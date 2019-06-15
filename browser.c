@@ -1,5 +1,9 @@
 #include "lvgl/lvgl.h"
 #include "lv_ex_conf.h"
+#include <dirent.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <stdio.h>
 
 #include "window.h"
 
@@ -94,7 +98,10 @@ static lv_res_t list_release_action(lv_obj_t * list_btn)
 
 }
 
-void create_rombrowser_list( lv_obj_t *win)
+
+
+
+void create_rombrowser_list( lv_obj_t *win, const char  * path)
 {
 
 static lv_group_t * g;
@@ -153,8 +160,30 @@ lv_list_set_style(list, LV_LIST_STYLE_BTN_PR, &style_btn_pr);
     lv_obj_t * title;
 
 
-    lv_list_add(list, SYMBOL_DIRECTORY, "Arcade", list_release_action);
-    lv_list_add(list, SYMBOL_FILE, "File", list_release_action);
+
+  DIR *dir;
+  struct dirent *entry;
+
+  if ((dir = opendir(path)) == NULL)
+    perror("opendir() error");
+  else {
+    puts("contents of root:");
+    while ((entry = readdir(dir)) != NULL) {
+        if ( !strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..") )
+        {
+            // do nothing (straight logic)
+        } else {
+              printf("  %s\n", entry->d_name);
+
+            if(entry->d_type == DT_DIR) {
+                lv_list_add(list, SYMBOL_DIRECTORY, entry->d_name, list_release_action);
+            } else {
+                lv_list_add(list, SYMBOL_FILE, entry->d_name, list_release_action);
+            }
+        }
+        }
+    closedir(dir);
+  }
 
 
 
