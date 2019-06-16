@@ -108,7 +108,9 @@ static lv_res_t list_release_action(lv_obj_t * list_btn)
 
 	printf("path[%s]\n",gpath);
 	if (!strcasecmp(gorigpath,gpath)) {
-		printf("at top of browser\n");
+		printf("at top of browser - go to main\n");
+		create_main_menu_inside(gwin);
+    		return LV_RES_OK;
 	}	
         // we probably want a real stack instead of using the paths..
 	char *slash = strrchr(gpath,'/');

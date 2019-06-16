@@ -15,6 +15,9 @@
 #include "lv_drivers/indev/mousewheel.h"
 #endif
 
+static lv_obj_t *gwin=NULL;
+
+
 static lv_res_t cb_release_action(lv_obj_t * cb)
 {
     /*A check box is clicked*/
@@ -246,7 +249,7 @@ lv_obj_align(cont, NULL, LV_ALIGN_CENTER, 0, 0);
 
 void create_ini_list2( lv_obj_t *win)
 {
-
+gwin=win;
 /*Create a scroll bar style*/
 static lv_style_t style_sb;
 lv_style_copy(&style_sb, &lv_style_plain);
@@ -453,11 +456,20 @@ lv_group_focus_obj(ta);
 static lv_res_t list_release_action(lv_obj_t * list_btn)
 {
     printf("List element click:%s\n", lv_list_get_btn_text(list_btn));
+    if (!strcasecmp("Back",lv_list_get_btn_text(list_btn))) {
+        lv_obj_t * page = lv_win_get_content(gwin);
+        if (page) {
+                lv_page_clean(page);
+        }
+
+                create_main_menu_inside(gwin);
+                return LV_RES_OK;
+        }
     return LV_RES_OK;
 }
 void create_ini_list3( lv_obj_t *win)
 {
-
+gwin=win;
 static lv_group_t * g;
     g = lv_group_create();
     lv_group_set_focus_cb(g, group_focus_cb);
@@ -504,7 +516,7 @@ lv_list_set_style(list, LV_LIST_STYLE_BTN_PR, &style_btn_pr);
     lv_obj_set_size(list, lv_page_get_scrl_width(lv_win_get_content(win)), lv_obj_get_height(lv_win_get_content(win)) );
     lv_group_add_obj(g, list);
 
-    lv_list_add(list, SYMBOL_FILE, "BACK", list_release_action);
+    lv_list_add(list, SYMBOL_LEFT, "Back", list_release_action);
 
 
     lv_obj_t * list_btn;

@@ -3,9 +3,8 @@
 
 #include "iniedit.h"
 #include "browser.h"
+#include "window.h"
 
-void create_main_menu_inside(lv_obj_t *win);
-void create_main_window_info(lv_obj_t *win);
 
 #if LV_EX_KEYBOARD || LV_EX_MOUSEWHEEL
 #include "lv_drv_conf.h"
